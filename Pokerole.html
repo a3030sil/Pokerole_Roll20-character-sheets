@@ -1,0 +1,1576 @@
+<script type="text/worker">
+    / Stat Bonus calc
+
+    /  defense
+    on('change:vitality change:defense_mod',function(eventInfo){
+
+    });
+
+    /  special defense
+    on('change:vitality change:spdefense_mod',function(eventInfo){
+
+    });
+
+</script>
+
+<rolltemplate class="sheet-rolltemplate-PMD">
+    <div class="sheet-roll-container">
+
+        {{#name}}
+        <div class="sheet-roll-row">
+
+            {{#character}}
+            <span class="sheet-roll-small sheet-roll-grey">{{character}}</span>
+            {{/character}}
+
+            <span class="sheet-roll-name"> {{name}} </span>
+
+            {{#skill1}}
+            <span class="sheet-roll-small sheet-roll-grey"> {{skill1}} {{#skill2}} + {{skill2}} {{#skill3}} + {{skill3}} {{/skill3}} {{/skill2}}</span>
+            {{/skill1}}
+
+            {{#target}}
+            <span class="sheet-roll-small sheet-roll-grey">{{target}}</span>
+            {{/target}}
+
+        </div>
+        {{/name}}
+
+        {{#rollGreater() pool 0}}
+        <div class="sheet-roll-row">
+            {{#type}}
+            <span class="sheet-roll-type">{{type}}{{#cat}} | {{cat}}{{/cat}}</span>
+            {{/type}}
+
+            <span class="sheet-roll-value">{{roll}}</span>
+
+            {{#pool}}
+            <span class="sheet-roll-small sheet-roll-pool">{{pool}} Dice</span>
+            {{/pool}}
+        </div>
+        {{/rollGreater() pool 0}}
+
+        {{#description}}
+        <div class="sheet-roll-row">
+            <span class="sheet-roll-description">{{description}}</span>
+        </div>
+        {{/description}}
+
+    </div>
+</rolltemplate>
+
+<input type="hidden" name="attr_sheet_version"  value="v2.0.0" />
+
+<input type="hidden" name="attr_strength_calc"  value="@{strength} + @{strength_bonus}" disabled="true"/>
+<input type="hidden" name="attr_dexterity_calc" value="@{dexterity} + @{dexterity_bonus}" disabled="true"/>
+<input type="hidden" name="attr_vitality_calc"  value="@{vitality} + @{vitality_bonus}" disabled="true"/>
+<input type="hidden" name="attr_special_calc"   value="@{special} + @{special_bonus}" disabled="true"/>
+<input type="hidden" name="attr_insight_calc"   value="@{insight} + @{insight_bonus}" disabled="true"/>
+
+<input type="hidden" name="attr_tough_calc"   value="@{tough} + @{tough_bonus}" disabled="true"/>
+<input type="hidden" name="attr_cool_calc"   value="@{cool} + @{cool_bonus}" disabled="true"/>
+<input type="hidden" name="attr_beauty_calc"   value="@{beauty} + @{beauty_bonus}" disabled="true"/>
+<input type="hidden" name="attr_clever_calc"   value="@{clever} + @{clever_bonus}" disabled="true"/>
+<input type="hidden" name="attr_cute_calc"   value="@{cute} + @{cute_bonus}" disabled="true"/>
+
+<input type="hidden" name="attr_defense"   value="@{vitality} + @{attr_defense_mod}" disabled="true"/>
+<input type="hidden" name="attr_spdefense"   value="@{vitality} + @{attr_spdefense_mod}" disabled="true"/>
+<input type="hidden" name="attr_spdefense_option"   value="@{insight} + @{attr_spdefense_mod}" disabled="true"/>
+
+<input type='hidden' name='attr_set_spdefense' value='0' />
+
+<input type="hidden" name="attr_move_generic_calc" value="@{generic_attribute} + @{generic_specialty}" />
+
+<input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+
+<input type="hidden" class="contest-toggle" name="attr_rank_contest"  value="0" />
+
+<div class="sheet-wrapper">
+    <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+    <input type="hidden" class="PMD-toggle" name="attr_PMD_mode" value="0" />
+    <div class='sheet-toggle-header'>
+        <div class='sheet-toggle'>
+            <input type="radio" name="attr_whisper" title="GM rolls" value="/w gm" />
+            <span>GM</span>
+        </div>
+        <div class='sheet-toggle'>
+            <input type="radio" name="attr_whisper" title="Public rolls " value=" " checked/>
+            <span>公開</span>
+        </div>
+    </div>
+    <input type="hidden" class='sheet-view' name="attr_viewTab" value='0' />
+    <div class='sheet-tab-core'>
+        <!----------------------------------------------------
+            Character Header (Name, Rank, etc.)
+        ----------------------------------------------------->
+        <input type="hidden" class="type-toggle" name="attr_type_1" value="trainer" />
+        <div class="section character-header">
+            <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                <strong><span name="attr_character_name" style="display:inline-block;font-size:2.2em;width:300px;"></span></strong>
+                <span class="field-labeled" style="width:100px;text-align:center;margin-left:40px;">
+                    <select name="attr_rank" title="@{rank}" >
+                                <option value="1">新手</option>
+                                <option value="2">初學者</option>
+                                <option value="3">業餘者</option>
+                                <option value="4">菁英</option>
+                                <option value="5">專家</option>
+                                <option value="5">大師</option>
+                                <option value="5">冠軍</option>
+                            </select>
+                    <span>階級</span>
+                </span>
+                <span class="field-labeled trainer-only" style="width:145px;text-align:center;margin-left:10px;">
+                    <select name="attr_rank_contest" title="@{rank_contest}">
+                                <option value="0">-</option>
+                                <option value="1">協調訓練家階級</option>
+                                <option value="2">超級協調訓練家階級</option>
+                                <option value="3">高級協調訓練家階級</option>
+                                <option value="4">大師協調訓練家階級</option>
+                            </select>
+                    <span>協調訓練家階級</span>
+                </span>
+                <span class="creature-toggle-wrapper">
+                    <input type="hidden" class="creature-toggle" name="attr_creature_mode"  value="0" />
+                    <input type="checkbox" name="attr_creature_mode"  value="1" title="Trainer or Pokemon" >
+                    <img class="sheet-trainer-only" src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/Trainer-Icon.png" />
+                    <img class="sheet-pokemon-only" src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/Pokeball-Min-Icon.png" />
+                </span>
+        </div>
+
+        <!----------------------------------------------------
+            Character Info
+        ----------------------------------------------------->
+
+        <div class="section character-info">
+            <div class="grid">
+                <div class="left-col" >
+                    <input type="hidden" class="creature-toggle" name="attr_creature_mode"  value="0" />
+                    <input type="hidden" name="attr_PMD_mode" class="PMD-toggle" value="0" />
+                    <div style="margin-bottom:5px;" class="sheet-trainer-only">
+                        <span class="field-labeled" style="width:100%;">
+                            <input type="text" name="attr_concept" title="@{concept}"  />
+                            <span>角色概念</span>
+                        </span>
+                    </div>
+                    <div style="margin-bottom:5px;" class="sheet-pokemon-only">
+                        <span class="field-labeled" style="width:160px;">
+                            <input type="text" name="attr_species" title="@{species}" />
+                            <span>分類</span>
+                        </span>
+                        <span class="field-labeled" style="width:100px" >
+                            <select name="attr_type_1" title="@{type_1}" >
+                                <option value="trainer">-</option>
+                                <option value="normal">一般</option>
+                                <option value="bug">蟲</option>
+                                <option value="dark">惡</option>
+                                <option value="dragon">龍</option>
+                                <option value="electric">電</option>
+                                <option value="fairy">妖精</option>
+                                <option value="fight">格鬥</option>
+                                <option value="fire">火</option>
+                                <option value="flying">飛行</option>
+                                <option value="ghost">幽靈</option>
+                                <option value="grass">草</option>
+                                <option value="ground">地面</option>
+                                <option value="ice">冰</option>
+                                <option value="poison">毒</option>
+                                <option value="psychic">超能力</option>
+                                <option value="rock">岩石</option>
+                                <option value="steel">鋼</option>
+                                <option value="water">水</option>
+                            </select>
+                            <span>屬性</span>
+                        </span>
+                        <span class="field-labeled" style="width:100px" >
+                            <select name="attr_type_2" title="@{type_2}" >
+                                <option value="trainer">-</option>
+                                <option value="normal">一般</option>
+                                <option value="bug">蟲</option>
+                                <option value="dark">惡</option>
+                                <option value="dragon">龍</option>
+                                <option value="electric">電</option>
+                                <option value="fairy">妖精</option>
+                                <option value="fight">格鬥</option>
+                                <option value="fire">火</option>
+                                <option value="flying">飛行</option>
+                                <option value="ghost">幽靈</option>
+                                <option value="grass">草</option>
+                                <option value="ground">地面</option>
+                                <option value="ice">冰</option>
+                                <option value="poison">毒</option>
+                                <option value="psychic">超能力</option>
+                                <option value="rock">岩石</option>
+                                <option value="steel">鋼</option>
+                                <option value="water">水</option>
+                            </select>
+                            <span>屬性</span>
+                        </span>
+                    </div>
+                    <div style="margin-bottom:5px;" >
+                        <input type="hidden" class="creature-toggle" name="attr_creature_mode"   value="0" />
+                        <span class="field-labeled" style="width:120px;">
+                            <input type="text" name="attr_gender" title="@{gender}" style="text-align:center" />
+                            <span>性別</span>
+                        </span>
+                        <span class="field-labeled" style="width:100px">
+                            <select name="attr_character_nature" title="@{character_nature}" >
+                                <option value="Adamant">固執</option>
+                                <option value="Bashful">害羞</option>
+                                <option value="Bold">大膽</option>
+                                <option value="Brave">勇敢</option>
+                                <option value="Calm">溫和</option>
+                                <option value="Careful">慎重</option>
+                                <option value="Docile">坦率</option>
+                                <option value="Gentle">溫順</option>
+                                <option value="Hardy">勤奮</option>
+                                <option value="Hasty">急躁</option>
+                                <option value="Impish">淘氣</option>
+                                <option value="Jolly">爽朗</option>
+                                <option value="Lax">樂天</option>
+                                <option value="Lonely">孤僻</option>
+                                <option value="Mild">慢吞吞</option>
+                                <option value="Modest">內斂</option>
+                                <option value="Naive">天真</option>
+                                <option value="Naughty">頑皮</option>
+                                <option value="Quiet">冷靜</option>
+                                <option value="Quirky">古怪</option>
+                                <option value="Rash">馬虎</option>
+                                <option value="Relaxed">悠閒</option>
+                                <option value="Sassy">自大</option>
+                                <option value="Serious">認真</option>
+                                <option value="Timid">膽小</option>
+                            </select>
+                            <span >性格</span>
+                        </span>
+                        <span class="field-labeled sheet-trainer-only" style="width:70px;text-align:center">
+                            <input type="number" name="attr_age" title="@{age}" />
+                            <span>年紀</span>
+                        </span>
+                    </div>
+                    <div class="sheet-trainer-only" style="margin-bottom:5px;" >
+                        <span class="field-labeled" style="width:100px;text-align:center">
+                            <input type="number" name="attr_money" title="@{money}" />
+                            <span>金錢</span>
+                        </span>
+                    </div>
+                    <div class="sheet-pokemon-only sheet-PMD-only" style="margin-bottom:5px;" >
+                        <span class="field-labeled" style="width:100px;text-align:center">
+                            <input type="number" name="attr_money" title="@{money}"  />
+                            <span>Apples</span>
+                        </span>
+                    </div>
+                    <div style="margin-bottom:5px;" class="sheet-pokemon-only">
+                        <span class="field-labeled" style="width:120px;">
+                            <input type="text" name="attr_size" title="@{size}" style="text-align:center" />
+                            <span>身高</span>
+                        </span>
+                        <span class="field-labeled" style="width:120px;">
+                            <input type="text" name="attr_weight" title="@{weight}" style="text-align:center" />
+                            <span>體重</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sheet-right-col" >
+                    <input type="hidden" class="creature-toggle" name="attr_creature_mode"   value="0" />
+                    <div class="pokemon-only">
+                        <div>
+                            <span class="field-labeled" style="width:170px;text-align:center">
+                                <input  type="text" name="attr_ability" title="@{ability}" />
+                                <span>特性</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px;text-align:center">
+                                <input  type="number" name="attr_ability_chance" title="@{ability_chance}" min="0" value="0" />
+                                <span>機率</span>
+                            </span>
+                            <button type="roll" name="roll_ability_chance" 
+                            value="@{whisper} &{template:PMD} {{name= @{ability} }} {{character= @{character_name} }} {{pool= [[@{ability_chance}]]}} {{roll= [[ @{ability_chance}d6>6s ]]}} {{description= @{ability_descr} }}"></button>
+                        </div>
+                        <div>
+                            <textarea name="attr_ability_descr" title="@{ability_descr}" style="height:75px; margin-bottom:0px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="trainer-only">
+                        <div style="margin-bottom:10px">
+                            <span class="party-pokeball">
+                                <input type="hidden" class="pokeball-state" name="attr_pokemon_slot_1_state"  value="0" />
+                                <input type="radio" name="attr_pokemon_slot_1_state" title="@{pokemon_slot_1_state}" class="pokeball-state-locked" value="0"/>
+                                <input type="radio" name="attr_pokemon_slot_1_state" title="@{pokemon_slot_1_state}" class="pokeball-state-closed" value="1"/>
+                                <input type="radio" name="attr_pokemon_slot_1_state" title="@{pokemon_slot_1_state}" class="pokeball-state-opened" value="2"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-closed.png" title="Closed" class="pokeball-state-closed"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-opened.png" title="Opened" class="pokeball-state-opened"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-locked.png" title="Locked" class="pokeball-state-locked"/>
+                                <input type="text" name="attr_pokemon_slot_1" />
+                            </span>
+                            <span class="party-pokeball">
+                                <input type="hidden" class="pokeball-state" name="attr_pokemon_slot_2_state" value="0" />
+                                <input type="radio" name="attr_pokemon_slot_2_state" title="@{pokemon_slot_2_state}" class="pokeball-state-locked" value="0"/>
+                                <input type="radio" name="attr_pokemon_slot_2_state" title="@{pokemon_slot_2_state}" class="pokeball-state-closed" value="1"/>
+                                <input type="radio" name="attr_pokemon_slot_2_state" title="@{pokemon_slot_2_state}" class="pokeball-state-opened" value="2"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-closed.png" title="Closed" class="pokeball-state-closed"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-opened.png" title="Opened" class="pokeball-state-opened"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-locked.png" title="Locked" class="pokeball-state-locked"/>
+                                <input type="text" name="attr_pokemon_slot_2" />
+                            </span>
+                        </div>
+                        <div style="margin-bottom:10px">
+                            <span class="party-pokeball">
+                                <input type="hidden" class="pokeball-state" name="attr_pokemon_slot_3_state" value="0" />
+                                <input type="radio" name="attr_pokemon_slot_3_state" title="@{pokemon_slot_3_state}" class="pokeball-state-locked" value="0"/>
+                                <input type="radio" name="attr_pokemon_slot_3_state" title="@{pokemon_slot_3_state}" class="pokeball-state-closed" value="1"/>
+                                <input type="radio" name="attr_pokemon_slot_3_state" title="@{pokemon_slot_3_state}" class="pokeball-state-opened" value="2"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-closed.png" title="Closed" class="pokeball-state-closed"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-opened.png" title="Opened" class="pokeball-state-opened"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-locked.png" title="Locked" class="pokeball-state-locked"/>
+                                <input type="text" name="attr_pokemon_slot_3" />
+                            </span>
+                            <span class="party-pokeball">
+                                <input type="hidden" class="pokeball-state" name="attr_pokemon_slot_4_state" value="0" />
+                                <input type="radio" name="attr_pokemon_slot_4_state" title="@{pokemon_slot_4_state}" class="pokeball-state-locked" value="0"/>
+                                <input type="radio" name="attr_pokemon_slot_4_state" title="@{pokemon_slot_4_state}" class="pokeball-state-closed" value="1"/>
+                                <input type="radio" name="attr_pokemon_slot_4_state" title="@{pokemon_slot_4_state}" class="pokeball-state-opened" value="2"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-closed.png" title="Closed" class="pokeball-state-closed"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-opened.png" title="Opened" class="pokeball-state-opened"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-locked.png" title="Locked" class="pokeball-state-locked"/>
+                                <input type="text" name="attr_pokemon_slot_4" />
+                            </span>
+                        </div>
+                        <div style="margin-bottom:0px">
+                            <span class="party-pokeball">
+                                <input type="hidden" class="pokeball-state" name="attr_pokemon_slot_5_state" value="0" />
+                                <input type="radio" name="attr_pokemon_slot_5_state" title="@{pokemon_slot_5_state}" class="pokeball-state-locked" value="0"/>
+                                <input type="radio" name="attr_pokemon_slot_5_state" title="@{pokemon_slot_5_state}" class="pokeball-state-closed" value="1"/>
+                                <input type="radio" name="attr_pokemon_slot_5_state" title="@{pokemon_slot_5_state}" class="pokeball-state-opened" value="2"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-closed.png" title="Closed" class="pokeball-state-closed"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-opened.png" title="Opened" class="pokeball-state-opened"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-locked.png" title="Locked" class="pokeball-state-locked"/>
+                                <input type="text" name="attr_pokemon_slot_5" />
+                            </span>
+                            <span class="party-pokeball">
+                                <input type="hidden" class="pokeball-state" name="attr_pokemon_slot_6_state" value="0" />
+                                <input type="radio" name="attr_pokemon_slot_6_state" title="@{pokemon_slot_6_state}" class="pokeball-state-locked" value="0"/>
+                                <input type="radio" name="attr_pokemon_slot_6_state" title="@{pokemon_slot_6_state}" class="pokeball-state-closed" value="1"/>
+                                <input type="radio" name="attr_pokemon_slot_6_state" title="@{pokemon_slot_6_state}" class="pokeball-state-opened" value="2"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-closed.png" title="Closed" class="pokeball-state-closed"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-opened.png" title="Opened" class="pokeball-state-opened"/>
+                                <img src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/pokeball-state-locked.png" title="Locked" class="pokeball-state-locked"/>
+                                <input type="text" name="attr_pokemon_slot_6" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!----------------------------------------------------
+            Pokemon Weaknesses
+        ----------------------------------------------------->
+        <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+        <div class="section resistance pokemon-only">
+                <div class="field-labeled" style="width:100%;margin-bottom:2px;">
+                    <input type="text" name="attr_weakness" title="@{weakness}" placeholder="無" />
+                    <span>弱點 +1/+2</span>
+                </div>
+                <div class="field-labeled" style="width:100%;margin-bottom:2px;">
+                    <input type="text" name="attr_resistance" title="@{resistance}" placeholder="無"/>
+                    <span>抗性 -1/-2</span>
+                </div>
+                <div class="field-labeled" style="width:100%;margin-bottom:2px;">
+                    <input type="text" name="attr_immunity" title="@{immunity}" placeholder="無" />
+                    <span>免疫</span>
+                </div>
+        </div>
+        
+        <!----------------------------------------------------
+            Attributes
+        ----------------------------------------------------->
+        <div class="section attributes">
+            <div class="grid">
+                <div class="left">
+                    <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                    <div class="attribute-row">
+                        <div class="battle strength">
+                            <label>力量</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_strength" title="@{strength}" min="1" value="1" max="10" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_strength_max" title="@{strength_max}" min="1" value="10" max="10" />
+                                <span title="">上限</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_strength_bonus" title="@{strength_bonus}"  value="0" />
+                                <span title="">加值</span>
+                            </span>
+                        </div>
+                        <div class="social tough">
+                            <label>強壯</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_tough" title="@{tough}" min="1" value="1" max="5" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                    <input type="number" name="attr_tough_bonus" title="@{tough_bonus}"  value="0" />
+                                    <span title="">加值</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="attribute-row">
+                        <div class="battle dexterity">
+                            <label>靈巧</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_dexterity" title="@{dexterity}" min="1" value="1" max="10" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_dexterity_max" title="@{dexterity_max}" min="1" value="10" max="10" />
+                                <span title="">上限</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_dexterity_bonus" title="@{dexterity_bonus}"  value="0" />
+                                <span title="">加值</span>
+                            </span>
+                        </div>
+                        <div class="social cool">
+                            <label>帥氣</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_cool" title="@{cool}" min="1" value="1" max="5" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                    <input type="number" name="attr_cool_bonus" title="@{cool_bonus}"  value="0" />
+                                    <span title="">加值</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="attribute-row">
+                        <div class="battle vitality">
+                            <label>活力</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_vitality" title="@{vitality}" min="1" value="1" max="10" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_vitality_max" title="@{vitality_max}" min="1" value="10" max="10" />
+                                <span title="">上限</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_vitality_bonus" title="@{vitality_bonus}" value="0" />
+                                <span title="">加值</span>
+                            </span>
+                        </div>
+                        <div class="social beauty">
+                            <label>美麗</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_beauty" title="@{beauty}" min="1" value="1" max="5" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                    <input type="number" name="attr_beauty_bonus" title="@{beauty_bonus}"  value="0" />
+                                    <span title="">加值</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="attribute-row">
+                        <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                        <div class="battle trainer-only">
+                            <label>洞察</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_insight" title="@{insight}" min="1" value="1" max="10" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_insight_max" title="@{insight_max}" min="1" value="10" max="10" />
+                                <span title="">上限</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_insight_bonus" title="@{insight_bonus}" value="0" />
+                                <span title="">加值</span>
+                            </span>
+                        </div>
+                        <div class="battle special pokemon-only">
+                            <label>特殊</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_special" title="@{special}" min="1" value="1" max="10" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_special_max" title="@{special_max}" min="1" value="10" max="10" />
+                                <span title="">上限</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_special_bonus" title="@{special_bonus}" value="0" />
+                                <span title="">加值</span>
+                            </span>
+                        </div>
+                        <div class="social clever">
+                            <label>聰明</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_clever" title="@{clever}" min="1" value="1" max="5" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                    <input type="number" name="attr_clever_bonus" title="@{clever_bonus}"  value="0" />
+                                    <span title="">加值</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="attribute-row">
+                        <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                        <div class="battle insight pokemon-only">
+                            <label>洞察</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_insight" title="@{insight}" min="1" value="1" max="10" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_insight_max" title="@{insight_max}" min="1" value="10" max="10" />
+                                <span title="">上限</span>
+                            </span>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_insight_bonus" title="@{insight_bonus}" value="0" />
+                                <span title="">加值</span>
+                            </span>
+                        </div>
+                        <div class="battle trainer-only" style="visibility:hidden;">
+                            <label></label>
+                            <span class="field-labeled"></span>
+                            <span class="field-labeled"></span>
+                            <span class="field-labeled"></span>
+                        </div>
+                        <div class="social cute">
+                            <label>可愛</label>
+                            <span class="field-labeled">
+                                <input type="number" name="attr_cute" title="@{cute}" min="1" value="1" max="5" />
+                                <span title="">點數</span>
+                            </span>
+                            <span class="field-labeled">
+                                    <input type="number" name="attr_cute_bonus" title="@{cute_bonus}"  value="0" />
+                                    <span title="">加值</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="hp-will">
+                        <strong style="display:inline-block;width:48px;text-align:center;">HP</strong>
+                        <span class="field-labeled" >
+                            <input type="number" name="attr_hp" title="@{hp}" min="0" value="0" />
+                            <span title="">當前值</span>
+                        </span>
+                        <strong>/</strong>
+                        <span class="field-labeled">
+                            <input type="number" name="attr_hp_max" title="@{hp_max}" value="@{vitality_calc} + @{hp_base}" disabled="true"/>
+                            <span title="">最大值</span>
+                        </span>
+                        <span class="field-labeled">
+                            <input type="number" name="attr_hp_base" title="@{hp_base}" min="0" value="0" />
+                            <span title="">基礎值</span>
+                        </span>
+                    </div>
+                    <br>
+                    <div class="hp-will">
+                        <strong style="display:inline-block;width:120px;text-align:right;">意志</strong>
+                        <span class="field-labeled" >
+                            <input type="number" name="attr_will" title="@{will}" min="0" value="3" max="10" />
+                            <span title="">當前值</span>
+                        </span>
+                        <strong>/</strong>
+                        <span class="field-labeled">
+                            <input type="number" name="attr_will_max" title="@{will_max}" min="0" value="3" max="10"/>
+                            <span title="">最大值</span>
+                        </span>
+                    </div>
+                    <div class="hp-will">
+                        <strong style="display:inline-block;width:120px;text-align:right;">信心值</strong>
+                        <span class="field-labeled" >
+                            <input type="number" name="attr_confidence" title="@{confidence}" min="0" value="0" max="10" />
+                            <span title="">當前值</span>
+                        </span>
+                        <strong>/</strong>
+                        <span class="field-labeled">
+                            <input type="number" name="attr_confidence_max" title="@{confidence_max}" min="0" value="1" max="10"/>
+                            <span title="">最大值</span>
+                        </span>
+                    </div>
+                    <div class="conditions">
+                        <div class="conditions-row">
+                            <input type="hidden" name="attr_is_burned"  class="sheet-collapse-input" value="0"/>
+                            <strong style="display:inline-block;width:80px">灼傷</strong>
+                            <input type="checkbox" name="attr_is_burned" title="@{is_burned}" value="1" />
+                            <span class="condition-collapse">
+                                <span >
+                                    <label>I  <input type="radio" value="2" name="attr_burn_stage" title="Burn 1" checked="true"/></label>
+                                </span>
+                                <span>
+                                    <label>II <input type="radio" value="4" name="attr_burn_stage" title="Burn 2" /></label>
+                                </span>
+                                <span>
+                                    <label>III<input type="radio" value="6" name="attr_burn_stage" title="Burn 3" /></label>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="conditions-row">
+                            <input type="hidden" name="attr_is_poisoned" class="sheet-collapse-input" value="0" />
+                            <strong style="display:inline-block;width:80px">中毒</strong>
+                            <input type="checkbox" name="attr_is_poisoned" title="@{is_poisoned}" value="1" />
+                            <span class="condition-collapse">
+                                <span>
+                                    <label>中毒  <input type="radio" value="1" name="attr_poison_stage" title="Poisoned" checked="true"/></label>
+                                </span>
+                                <span>
+                                    <label>劇毒 <input type="radio" value="2" name="attr_poison_stage" title="Badly Poisoned" /></label>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">麻痺</strong>
+                            <input type="checkbox" name="attr_is_paralysed" title="@{is_paralysed}" />
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">冰凍</strong>
+                            <input type="checkbox" name="attr_is_frozen" title="@{is_frozen}" />
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">睡眠</strong>
+                            <input type="checkbox" name="attr_is_asleep" title="@{is_asleep}" />
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">混亂</strong>
+                            <input type="checkbox" name="attr_is_confused" title="@{is_confused}" />
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">定身法</strong>
+                            <input type="checkbox" name="attr_is_disabled" title="@{is_disabled}" />
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">畏縮</strong>
+                            <input type="checkbox" name="attr_is_flinched" title="@{is_flinched}" />
+                        </div>
+                        <div class="conditions-row">
+                            <strong style="display:inline-block;width:80px">著迷</strong>
+                            <input type="checkbox" name="attr_is_inLove" title="@{is_inLove}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sheet-bonuses">
+                    <div>
+                        <!-- Initiative -->
+                        <div>
+                            <span style="display:inline-block;width:160px">
+                                <span style="display:inline-block;width:100%">
+                                    <strong>靈巧 + 警覺</strong>
+                                </span>
+                            </span>
+                            <span style="display:inline-block;width:120px">
+                                <span class="field-labeled"  style="display:inline-block;width:50px">
+                                    <input type="number" name="attr_initiative_calc" title="@{initiative_calc}" value="(@{dexterity_calc})+@{alert}+@{initiative_mod}" disabled="true" />
+                                    <span title="">骰池</span>
+                                </span>
+                                <span class="field-labeled" style="display:inline-block;width:60px">
+                                    <input type="number" name="attr_initiative_mod" title="@{initiative_mod}" value="0"  />
+                                    <span title="">調整值</span>
+                                </span>
+                            </span>
+                            <span style="display:inline-block;width:110px">
+                                <button type="roll" name="roll_initiative" value="@{whisper} &{template:PMD} {{name= 先攻 }} {{character= @{character_name} }} {{pool= [[@{initiative_calc}]]}} {{roll=[[(@{initiative_calc})d6>4s]]}}">先攻</button>
+                            </span>
+                        </div>
+                        <!-- Accuracy -->
+                        <div>
+                            <span style="display:inline-block;width:160px">
+                                <strong>靈巧 + </strong>
+                                <select name="attr_accuracy_attribute" value="@{brawl}" title="@{accuracy_attribute}" style="width:auto">
+                                    <option value="@{brawl}">鬥毆</option>
+                                    <option value="@{channel}">導引</option>
+                                    <option value="@{throw}">投擲</option>
+                                    <option value="@{weapons}">武器</option>
+                                </select>
+                            </span>
+                            <span style="display:inline-block;width:120px">
+                                <span class="field-labeled"  style="display:inline-block;width:50px">
+                                    <input type="number" name="attr_accuracy_calc" title="@{accuracy_calc}" value="@{dexterity_calc} + @{accuracy_attribute} + @{accuracy_mod}" disabled="true" />
+                                    <span>骰池</span>
+                                </span>
+                                <span class="field-labeled" style="display:inline-block;width:60px">
+                                    <input type="number" name="attr_accuracy_mod" title="@{accuracy_mod}" value="0"  />
+                                    <span title="">調整值</span>
+                                </span>
+                            </span>
+                            <span style="display:inline-block;width:110px">
+                                <button type="roll" name="roll_accuracy" 
+                                value="@{whisper} &{template:PMD} {{name= 命中}} {{character= @{character_name} }} {{pool= [[@{dexterity_calc} + @{accuracy_attribute} + @{accuracy_mod}]] }} {{roll=[[(@{dexterity_calc}+@{accuracy_attribute}+@{accuracy_mod})d6>4s]]}}">命中</button>
+                            </span>
+                        </div>
+
+                        <!-- Evade -->
+                        <div>
+                            <span style="display:inline-block;width:160px">
+                                <strong>靈巧 + 閃避</strong>
+                            </span>
+                            <span style="display:inline-block;width:120px">
+                                <span class="field-labeled"  style="display:inline-block;width:50px">
+                                    <input type="number" name="attr_evade_calc" title="@{evade_calc}" value="(@{dexterity_calc}) + @{evasion} + @{evade_mod}" disabled="true"/>
+                                    <span title="">骰池</span>
+                                </span>
+                                <span class="field-labeled" style="display:inline-block;width:60px">
+                                    <input type="number" name="attr_evade_mod" title="@{evade_mod}" value="0"  />
+                                    <span title="">調整值</span>
+                                </span>
+                            </span>
+                            <span style="display:inline-block;width:110px">
+                               <button type="roll" name="roll_evade"
+                            value="@{whisper} &{template:PMD} {{name= 閃避}} {{character= @{character_name} }} {{pool= [[(@{dexterity_calc}) + @{evasion} + @{evade_mod}]] }} {{roll= [[(@{dexterity_calc}+@{evasion}+@{evade_mod})d6>4s]] }}">閃避</button>
+                            </span>
+                        </div> 
+
+                        <!-- Clash -->
+                        <div>
+                            <span style="display:inline-block;width:160px">
+                                <select name="attr_clash_attribute" value="@{strength_calc}" title="@{clash_attribute}" style="width:auto" >
+                                    <option value="@{strength_calc}">力量</option>
+                                    <option value="@{special_calc}">特殊</option>
+                                </select>
+                                <strong>+ 對抗</strong>
+                            </span>
+                            <span style="display:inline-block;width:120px">
+                                <span class="field-labeled sheet-field-readonly"  style="display:inline-block;width:50px">
+                                    <input type="number" name="attr_clash_calc" title="@{clash_calc}" value="@{clash_attribute}+@{clash}+@{clash_mod}" disabled="true"/>
+                                    <span title="">骰池</span>
+                                </span>
+                                <span class="field-labeled " style="display:inline-block;width:60px">
+                                    <input type="number" name="attr_clash_mod" title="@{clash_mod}" value="0"  />
+                                    <span title="">調整值</span>
+                                </span>
+                            </span>
+                            <span style="display:inline-block;width:110px">
+                               <button type="roll" name="roll_clash"
+                            value="@{whisper} &{template:PMD}{{character= @{character_name} }}{{name= 對抗 }}{{pool=[[@{clash_attribute}+@{clash}+@{clash_mod}]] }}{{roll= [[(@{clash_attribute}+@{clash}+@{clash_mod})d6>4s]]}}">對抗</button>
+                            </span>
+                        </div>
+                    </div>
+                    <div style="box-sizing: border-box;-webkit-box-sizing: border-box;">
+                        <!-- Defenses -->
+                        <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                        <div>
+                            <strong>活力 + </strong>
+                            <span class="field-labeled" style="display:inline-block;width:100px;text-align:center">
+                                <input type="number" name="attr_defense_mod" title="@{defense_mod}"  value="0" />
+                                <span title="">防禦調整值</span>
+                            </span>
+                            <strong>→</strong>
+                            <span class="field-labeled sheet-field-readonly" style="display:inline-block;width:70px;text-align:center">
+                                <input type="number" name="attr_defense_calc" title="@{defense_calc}" value="@{vitality_calc}+@{defense_mod}" disabled="true"/>
+                                <span title="">防禦</span>
+                            </span>
+                        </div>
+
+                        <input type="hidden" class="options-toggle" name="attr_options_mode" value="0" />
+                        <div class="no-options">
+                            <strong>活力 + </strong>
+                            <span class="field-labeled" style="display:inline-block;width:100px;text-align:center">
+                                <input type="number" name="attr_spdefense_mod" title="@{spdefense_mod}"  value="0"  />
+                                <span title="">特防調整值</span>
+                            </span>
+                            <strong>→</strong>
+                            <span class="field-labeled sheet-field-readonly no-options" style="display:inline-block;width:70px;text-align:center">
+                                <input type="number" name="attr_spdefense_calc" title="@{spdefense_calc}" value="@{vitality_calc}+@{spdefense_mod}" disabled="true"/>
+                                <span title="">特防</span>
+                            </span>
+                        </div>
+                        <div class="use-options">
+                            <strong>洞察 + </strong>
+                            <span class="field-labeled" style="display:inline-block;width:100px;text-align:center">
+                                <input type="number" name="attr_spdefense_mod" title="@{spdefense_mod}"  value="0"  />
+                                <span title="">特防調整值</span>
+                            </span>
+                            <strong>→</strong>
+                            <span class="field-labeled sheet-field-readonly" style="display:inline-block;width:70px;text-align:center">
+                                <input type="number" name="attr_spdefense_option_calc" title="@{spdefense_option_calc}" value="@{insight_calc}+@{spdefense_mod}" disabled="true"/>
+                                <span title="">特防</span>
+                            </span>
+                        </div>
+
+                        <div style="height:10px;"></div>
+                        
+                        <div class="sheet-trainer-only">
+                            <span class="field-labeled sheet-field-readonly" style="display:inline-block;width:120px;text-align:center">
+                                    <select name="attr_pokeball_current" title="@{pokeball_current}">
+                                            <option value="4">精靈球 (4)</option>
+                                            <option value="6">超級球 (6)</option>
+                                            <option value="8">高級球 (8)</option>
+                                    </select>
+                                    <span title="">精靈球</span>
+                            </span>
+                            <strong>+ 調整值</strong>
+                            <span style="display:inline-block;width:70px">
+                            <button type="roll" style="display: block; width: auto ; margin: 3px auto;padding: 3px 20px;"
+                                value="@{whisper} &{template:PMD}{{name= 收服判定}}{{character= @{character_name} }}{{pool=[[@{pokeball_current} + ?{Modifier|0}]] }}{{roll= [[(@{pokeball_current} + ?{Modifier|0})d6>4s]]}}">收服！</button>
+                            </span>
+                        </div>
+                    </div>
+            </div>
+            
+            <div class="sheet-bonuses">
+                        <!-- Generic Rolls -->
+                        <div class="generic-roll">
+                            <strong>自訂擲骰:</strong>
+                                <span class="field-labeled" style="width:100px">
+                                    <select name="attr_generic_attribute" title="@{generic_attribute}">
+                                        <option value="0">-</option>
+                                        <option value="@{strength_calc}">力量</option>
+                                        <option value="@{dexterity_calc}">靈巧</option>
+                                        <option value="@{vitality_calc}">活力</option>
+                                        <option value="@{special_calc}">特殊</option>
+                                        <option value="@{insight_calc}">洞察</option>
+                                        <option value="@{tough_calc}">強壯</option>
+                                        <option value="@{cool_calc}">帥氣</option>
+                                        <option value="@{beauty_calc}">美麗</option>
+                                        <option value="@{cute_calc}">可愛</option>
+                                        <option value="@{clever_calc}">聰明</option>
+                                        <option value="@{will_calc}">意志</option>
+                                    </select>
+                                    <span title="">特質</span>
+                                </span>
+                                <strong>+</strong>
+                                <span class="field-labeled" style="width:100px">
+                                    <select name="attr_generic_specialty" title="@{generic_specialty}">
+                                        <option value="0">-</option>
+                                        <optgroup label="Fight">
+                                            <option value="@{brawl}">鬥毆</option>
+                                            <option value="@{channel}">導引</option>
+                                            <option value="@{clash}">對抗</option>
+                                            <option value="@{evasion}">閃避</option>
+                                            <option value="@{throw}">投擲</option>
+                                            <option value="@{weapons}">武器</option>
+                                        </optgroup>
+                                        <optgroup label="Survival">
+                                            <option value="@{alert}">警覺</option>
+                                            <option value="@{athletic}">運動</option>
+                                            <option value="@{nature}">自然</option>
+                                            <option value="@{stealth}">隱匿</option>
+                                        </optgroup>
+                                        <optgroup label="Social">
+                                            <option value="@{allure}">誘惑</option>
+                                            <option value="@{empathy}">共感</option>
+                                            <option value="@{etiquette}">禮儀</option>
+                                            <option value="@{intimidate}">威嚇</option>
+                                            <option value="@{perform}">表演</option>
+                                        </optgroup>
+                                        <optgroup label="Knowledge">
+                                            <option value="@{crafts}">工藝</option>
+                                            <option value="@{lore}">傳聞</option>
+                                            <option value="@{medicine}">醫藥</option>
+                                            <option value="@{science}">科學</option>
+                                        </optgroup>
+                                        <optgroup label="Notoriety">
+                                            <option value="@{connections}">人脈</option>
+                                            <option value="@{fame}">名氣</option>
+                                            <option value="@{sponsors}">贊助商</option>
+                                            <option value="@{supporters}">擁護者</option>
+                                        </optgroup>
+                                    </select>
+                                    <span title="">技能</span>
+                                </span>
+                                <strong>+ 調整值</strong>
+                                <button type="roll" name="roll_generic" 
+                                value="@{whisper} &{template:PMD}{{character= @{character_name}}}{{name= 自訂擲骰 }}{{pool=[[@{move_generic_calc} + (?{Modifier|0})]]}}{{roll=[[(@{move_generic_calc} + (?{Modifier|0}) )d6>4s]] }}">擲骰</button>
+                        </div>
+                            <span>
+                                <button type="roll" style="display: inline-block; width: auto ; margin: 3px auto;padding: 3px 20px;"
+                                value="@{whisper} &{template:PMD}{{name= 額外骰 }}{{character= @{character_name} }} {{pool= [[ ?{Number of Dice | 1} ]]}} {{roll= [[ ?{Number of Dice | 1}d6>4s ]] }}">額外骰</button>
+                                <button type="roll" style="display: inline-block; width: auto ; margin: 0 auto;padding: 3px 20px;"
+                                value="@{whisper} &{template:PMD}{{name= 幸運骰 }}{{character= @{character_name}}}{{pool= [[1]]}}{{roll=[[1d6>6s]]}}">幸運骰</button>
+                            </span>
+                    </div>
+        </div>
+
+        <!----------------------------------------------------
+            Pokemon Attitude
+        ----------------------------------------------------->
+        <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+        <div class="section attitudes sheet-pokemon-only">
+            <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+            <span class="PMD-swap-wrapper">
+                <input type="hidden" name="attr_PMD_mode" class="PMD-toggle" value="0" />
+                <input type="checkbox" name="attr_PMD_mode"  value="1" title="Core or PMD" />
+                <img class="PMD-only" src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/PMD-Badge-Icon.png" />
+                <img class="Core-only" src="https://raw.githubusercontent.com/Roll20/roll20-character-sheets/master/Pokerole_v2/images/Pokeball-Min-Icon.png" />
+            </span>
+            <div class="sheet-attitude-grid" style="background:#26b7b4;border-radius:10px; padding: 5px 0px;">
+                <input type="hidden" name="attr_PMD_mode" class="PMD-toggle" value="0" />
+                <div class="Core-only sheet-attitude-grid" style="width:45%;margin:0 auto;">
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">幸福度</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_happiness" title="@{happiness}" min="0" value="2" max="5" />
+                        </span>
+                    </div>
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">忠誠度</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_loyalty" title="@{loyalty}" min="0" value="2" max="5" />
+                        </span>
+                    </div>
+                </div>
+
+                <div class="PMD-only sheet-attitude-grid" style="width:70%;margin:0 auto;">
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">Logic</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_logic" title="@{logic}" min="0" value="2" max="5" />
+                        </span>
+                    </div>
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">Instinct</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_instinct" title="@{instinct}" min="0" value="2" max="5" />
+                        </span>
+                    </div>
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">Primal</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_primal" title="@{primal}" min="0" value="2" max="5" />
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sheet-attitude-grid" style="width:10%;margin:0 auto;"></div>
+
+                <div class="Core-only sheet-attitude-grid" style="width:45%;margin:0 auto;">
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">進化點</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_total_battles" title="@{total_battles}" min="0" value="0" />
+                        </span>
+                    </div>
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">升階值</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_wins" title="@{wins}" min="0" value="0" />
+                        </span>
+                    </div>
+                </div>
+                <div class="PMD-only sheet-attitude-grid" style="width:20%;margin:0 auto;">
+                    <div style="display:inline-block;">
+                        <label style="display:block;text-align:center">Guild Points</label>
+                        <span class="field-labeled" style="display:block;width:100px;margin:0 auto;text-align:center">
+                            <input type="number" name="attr_guild_points" title="@{guild_points}" min="0" value="0" />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!----------------------------------------------------
+            Skills
+        ----------------------------------------------------->
+        <div class="section skills">
+            <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+            <div class="skills-main">
+                <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                <div class="skills-col">
+                    <label >戰鬥</label>
+                </div>
+                <div class="skills-col">
+                    <label >生存</label>
+                </div>
+                <div class="skills-col">
+                    <label >社交</label>
+                </div>
+                <div class="skills-col trainer-only">
+                    <label >知識</label>
+                </div>
+            </div>
+
+            <div class="skills-sub">
+                <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                <div class="skills-col pokemon-only">
+                    <div>
+                        <strong>鬥毆</strong>
+                        <input type="number" name="attr_brawl" title="@{brawl}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>導引</strong>
+                        <input type="number" name="attr_channel" title="@{channel}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>對抗</strong>
+                        <input type="number" name="attr_clash" title="@{clash}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>閃避</strong>
+                        <input type="number" name="attr_evasion" title="@{evasion}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <input type="text" name="attr_extra_fight_name" title="@{extra_fight_name}" placeholder="其他" style="margin-left:20px;text-align:right;width:80px;border:none;border-bottom:2px;" />
+                        <input type="number" name="attr_extra_fight" title="@{extra_fight}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col trainer-only">
+                    <div>
+                        <strong>鬥毆</strong>
+                        <input type="number" name="attr_brawl" title="@{brawl}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>閃避</strong>
+                        <input type="number" name="attr_evasion" title="@{evasion}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>投擲</strong>
+                        <input type="number" name="attr_throw" title="@{throw}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>武器</strong>
+                        <input type="number" name="attr_weapons" title="@{weapons}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <input type="text" name="attr_extra_fight_name" title="@{extra_fight_name}" placeholder="其他" style="margin-left:20px;text-align:right;width:80px;border:none;border-bottom:2px;" />
+                        <input type="number" name="attr_extra_fight" title="@{extra_fight}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col">
+                    <div>
+                        <strong>警覺</strong>
+                        <input type="number" name="attr_alert" title="@{alert}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>運動</strong>
+                        <input type="number" name="attr_athletic" title="@{athletic}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>自然</strong>
+                        <input type="number" name="attr_nature" title="@{nature}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>隱匿</strong>
+                        <input type="number" name="attr_stealth" title="@{stealth}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <input type="text" name="attr_extra_survival_name" title="@{extra_survival_name}" placeholder="其他" style="margin-left:20px;text-align:right;width:80px;border:none;border-bottom:2px;" />
+                        <input type="number" name="attr_extra_survival" title="@{extra_survival}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col trainer-only">
+                    <div>
+                        <strong>共感</strong>
+                        <input type="number" name="attr_empathy" title="@{empathy}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>禮儀</strong>
+                        <input type="number" name="attr_etiquette" title="@{etiquette}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>威嚇</strong>
+                        <input type="number" name="attr_intimidate" title="@{intimidate}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>表演</strong>
+                        <input type="number" name="attr_perform" title="@{perform}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <input type="text" name="attr_extra_social_name" title="@{extra_social_name}" placeholder="其他" style="margin-left:20px;text-align:right;width:80px;border:none;border-bottom:2px;" />
+                        <input type="number" name="attr_extra_social" title="@{extra_social}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col pokemon-only">
+                    <div>
+                        <strong>誘惑</strong>
+                        <input type="number" name="attr_allure" title="@{allure}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>禮儀</strong>
+                        <input type="number" name="attr_etiquette" title="@{etiquette}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>威嚇</strong>
+                        <input type="number" name="attr_intimidate" title="@{intimidate}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>表演</strong>
+                        <input type="number" name="attr_perform" title="@{perform}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <input type="text" name="attr_extra_social_name" title="@{extra_social_name}" placeholder="其他" style="margin-left:20px;text-align:right;width:80px;border:none;border-bottom:2px;" />
+                        <input type="number" name="attr_extra_social" title="@{extra_social}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col trainer-only">
+                    <div>
+                        <strong>工藝</strong>
+                        <input type="number" name="attr_crafts" title="@{crafts}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>傳聞</strong>
+                        <input type="number" name="attr_lore"  title="@{lore}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>醫藥</strong>
+                        <input type="number" name="attr_medicine" title="@{medicine}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <strong>科學</strong>
+                        <input type="number" name="attr_science" title="@{science}" min="0" value="0" max="5" />
+                    </div>
+                    <div>
+                        <input type="text" name="attr_extra_knowledge_name" title="@{extra_knowledge_name}" placeholder="其他" style="margin-left:20px;text-align:right;width:80px;border:none;border-bottom:2px;" />
+                        <input type="number" name="attr_extra_knowledge" title="@{extra_knowledge}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" class="contest-toggle" name="attr_rank_contest"  value="0" />
+            <div class="skills-title trainer-only contest-mode">
+                <div>
+                    <label>聲譽類技能</label>
+                </div>
+            </div>
+            <div class="skills-contest trainer-only contest-mode">
+                <div class="skills-col">
+                    <div>
+                        <strong>人脈</strong>
+                        <input type="number" name="attr_connections" title="@{connections}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col">
+                    <div>
+                        <strong>名氣</strong>
+                        <input type="number" name="attr_fame" title="@{fame}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col">
+                    <div>
+                        <strong>贊助商</strong>
+                        <input type="number" name="attr_sponsors" title="@{sponsors}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+                <div class="skills-col">
+                    <div>
+                        <strong>擁護者</strong>
+                        <input type="number" name="attr_supporters" title="@{supporters}" min="0" value="0" max="5" />
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!----------------------------------------------------
+            Inventory
+        ----------------------------------------------------->
+        <div class="section inventory">
+            <div class="inventory-divide">
+                <div class="inventory-small">
+                    <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                    <div class="inventory-potions trainer-only" style="margin-bottom:3px;">
+                        <div>
+                            <label style="display: inline-block ; width: 80px;text-align:center">傷藥</label>
+                            <strong>x</strong>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_potion_count" title="@{potion_count}" min="0" value="0"  />
+                                <span>數量</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_potion_use" title="@{potion_use}" min="0" value="0" max="2" />
+                                <span>已使用</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_potion_use_max" title="@{potion_use_max}" value="2" disabled="true"    />
+                                <span>使用全部</span>
+                            </span>
+                        </div>
+                        <div>
+                            <label style="display: inline-block ; width: 80px;text-align:center">好傷藥</label>
+                            <strong>x</strong>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_superPotion_count" title="@{superPotion_count}" min="0" value="0" />
+                                <span>數量</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_superPotion_use" title="@{superPotion_use}" min="0" value="0" max="4" />
+                                <span>已使用</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_superPotion_use_max" title="@{superPotion_use_max}" value="4" disabled="true"  />
+                                <span>使用全部</span>
+                            </span>
+                        </div>
+                        <div>
+                            <label style="display: inline-block ; width: 80px;text-align:center">厲害傷藥</label>
+                            <strong>x</strong>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_hyperPotion_count" title="@{hyperPotion_count}" min="0" value="0"  />
+                                <span>數量</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_hyperPotion_use" title="@{hyperPotion_use}" min="0" value="0" max="14" />
+                                <span>已使用</span>
+                            </span>
+                            <span class="field-labeled" style="width:70px">
+                                <input type="number" name="attr_hyperPotion_use_max" title="@{hyperPotion_use_max}" value="14" disabled="true"  />
+                                <span>使用全部</span>
+                            </span>
+                        </div>
+                    </div>
+                    <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                    <input type="hidden" name="attr_PMD_mode" class="PMD-toggle" value="0" />
+                    <div class="PMD-gear Core-only pokemon-only">
+                        <label class="header">裝備</label>
+                        <div>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_heldItem" title="@{heldItem}"  />
+                                <span>攜帶道具</span>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_accessory1" title="@{accessory1}" />
+                                <span>裝飾配件</span>
+                            </span>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_accessory2" title="@{accessory2}"  />
+                                <span>裝飾配件</span>
+                            </span>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_accessory3"  title="@{accessory3}" />
+                                <span>裝飾配件</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="PMD-gear PMD-only">
+                        <label class="header">Gear</label>
+                        <div>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_heldItem" title="@{heldItem}"  />
+                                <span>裝飾配件</span>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_accessory1" title="@{accessory1}" />
+                                <span>Garment</span>
+                            </span>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_accessory2" title="@{accessory2}"  />
+                                <span>Garment</span>
+                            </span>
+                            <span class="field-labeled" style="display:block">
+                                <input type="text" name="attr_accessory3"  title="@{accessory3}" />
+                                <span>Garment</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="inventory-quick trainer-only">
+                        <label class="header">隨身包</label>
+                        <div>
+                            <fieldset class="repeating_quick-items" name="repeating_quick-items">
+                                <div class="quick-item">
+                                    <input type="number" name="attr_quick_item_count" class="item-count" min="0" value="1"/>
+                                    <input type="text" name="attr_quick_item" style="width: 290px;" />
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+                <div class="inventory-large">
+                    <label class="header">背包</label>
+                    <div>
+                        <fieldset class="repeating_inventory" name="repeating_inventory">
+                            <div class="inventory-item">
+                                <input type="number" name="attr_inventory_item_count" class="item-count" min="0" value="1"/>
+                                <input type="text" name="attr_inventory_item" style="width: 310px;">
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+            <div class="achievements-divide">
+                <input type="hidden" class="creature-toggle" name="attr_creature_mode" value="0" />
+                <div class="inventory-badges trainer-only">
+                    <label class="header">徽章</label>
+                    <fieldset class="repeating_badges">
+                        <span class="field-labeled" style="width:160px;">
+                            <input type="text" name="attr_badge"/>
+                        </span>
+                    </fieldset>
+                </div>
+                <div class="inventory-badges pokemon-only">
+                    <label class="header">飾品＆華麗大賽獎章</label>
+                    <fieldset class="repeating_awards">
+                        <span class="field-labeled">
+                            <input type="text" name="attr_award"/>
+                        </span>
+                    </fieldset>
+                </div>
+                <div class="inventory-notes">
+                    <label class="header">筆記 & 成就</label>
+                    <div class="textflex">
+                        <textarea name="attr_notes" title="@{notes}"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!----------------------------------------------------
+            Move
+        ----------------------------------------------------->
+        <div class="section moves">
+            <label class="header">行動</label>
+            <fieldset class="repeating_moves">
+                <div class="move-item">
+                    <span class="move-known-wrapper">
+                        <input type="checkbox" name="attr_move_known" title="Move Known">
+                        <span></span>
+                    </span>
+                    <input type="hidden" name="attr_move_accuracy_calc" value="@{move_accuracy_1} + @{move_accuracy_3} + @{move_accuracy_mod}" disabled=true />
+                    <input type="hidden" name="attr_move_damage_calc"   value="@{move_damage_attribute} + @{move_power} + @{move_has_stab}" />
+                    <div class="move-header">
+                        <input type="hidden" name="attr_move_display_mode" class="move-display-toggle" value="0" />
+                        <div class="move-edit">
+                            <span class="field-labeled" style="width:200px">
+                                <input type="text" name="attr_move_name"  />
+                                <span>行動名稱</span>
+                            </span>
+                            <span class="field-labeled" style="width:auto" >
+                                <select class="move-type" name="attr_move_type">
+                                    <option>-</option>
+                                    <option>一般</option>
+                                    <option>蟲</option>
+                                    <option>惡</option>
+                                    <option>龍</option>
+                                    <option>電</option>
+                                    <option>妖精</option>
+                                    <option>格鬥</option>
+                                    <option>火</option>
+                                    <option>飛行</option>
+                                    <option>幽靈</option>
+                                    <option>草</option>
+                                    <option>地面</option>
+                                    <option>冰</option>
+                                    <option>毒</option>
+                                    <option>超能力</option>
+                                    <option>岩石</option>
+                                    <option>鋼</option>
+                                    <option>水</option>
+                                </select> 
+                                <span>屬性</span>
+                            </span>
+                            <span class="field-labeled" style="width:auto" >
+                                <select class="move_cat"name="attr_move_category">
+                                    <option>物理</option>
+                                    <option>特殊</option>
+                                    <option>變化</option>
+                                </select> 
+                                <span>分類</span>
+                            </span>
+                            <span class="field-labeled" style="width:180px">
+                                <select name="attr_move_target" style="width:100%">
+                                    <option>-</option>
+                                    <optgroup label="User / Allies">
+                                        <option>使用者</option>
+                                        <option>單體隊友</option>
+                                        <option>使用者 & 所有範圍內的隊友</option>
+                                    </optgroup>
+                                    <optgroup label="Foes">
+                                        <option>單體敵人</option>
+                                        <option>隨機敵人</option>
+                                        <option>所有範圍內的敵人</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option>範圍全體</option>
+                                        <option>戰鬥場地</option>
+                                    </optgroup>
+                                </select>
+                                <span>目標</span>
+                            </span> 
+                            <span class="move-edit-toggle-wrapper">
+                                <input type="hidden" name="attr_move_display_mode" class="move-display-toggle" value="0"/>
+                                <input type="checkbox" name="attr_move_display_mode" value="1" /><p style="display:inline;"> 鎖定</p>
+                                <img class="move-edit" src="">
+                                <img class="move-display" src="">
+                            </span>
+                        </div>
+                        <div class="move-display">
+                            <span class="field-labeled" style="width:200px;">
+                                <span class="move-name" name="attr_move_name"  ></span>
+                                <span>行動名稱</span>
+                            </span>
+                            <span class="field-labeled" style="width:120px;">
+                                <span class="move-type" name="attr_move_type" ></span>
+                                <span>屬性</span>
+                            </span>
+                            <span class="field-labeled" style="width:120px;">
+                                <span class="move_cat" name="attr_move_category" ></span>
+                                <span>分類</span>
+                            </span>
+                            <span class="field-labeled" style="width:200px;">
+                                <span type="text" name="attr_move_target" ></span>
+                                <span>目標</span>
+                            </span> 
+                            <span class="move-edit-toggle-wrapper">
+                                <input type="hidden" name="attr_move_display_mode" class="move-display-toggle" value="0"/>
+                                <input type="checkbox" name="attr_move_display_mode" value="1"  title="Lock"/>
+                                <img class="move-edit" src="">
+                                <img class="move-display" src="">
+                            </span>
+                        </div>
+                    </div>
+                    <div class="move-body">
+                        <input type="hidden" name="attr_move_display_mode" class="move-display-toggle" value="0" />
+                        <div class="move-edit">
+                            <div>
+                                <label style="display:inline-block;width:70px">命中</label>
+                                <span class="field-labeled">
+                                    <select name="attr_move_accuracy_1" value="0" >
+                                        <option value="0">-</option>
+                                        <option value="@{strength_calc}">力量</option>
+                                        <option value="@{dexterity_calc}">靈巧</option>
+                                        <option value="@{vitality_calc}">活力</option>
+                                        <option value="@{special_calc}">特殊</option>
+                                        <option value="@{insight_calc}">洞察</option>
+                                        <option value="@{tough_calc}">強壯</option>
+                                        <option value="@{cool_calc}">帥氣</option>
+                                        <option value="@{beauty_calc}">美麗</option>
+                                        <option value="@{cute_calc}">可愛</option>
+                                        <option value="@{clever_calc}">聰明</option>
+                                        <option value="@{will}">意志</option>
+                                    </select>
+                                </span> <strong>+</strong>
+                                <span class="field-labeled">
+                                    <select name="attr_move_accuracy_3" value="0" >
+                                        <option value="0">-</option>
+                                        <optgroup label="Fight">              
+                                            <option value="@{brawl}">鬥毆</option>
+                                            <option value="@{channel}">導引</option>
+                                            <option value="@{clash}">對抗</option>
+                                            <option value="@{evasion}">閃避</option>
+                                            <option value="@{throw}">投擲</option>
+                                            <option value="@{weapons}">武器</option>
+                                        </optgroup>
+                                        <optgroup label="Survival">
+                                            <option value="@{alert}">警覺</option>
+                                            <option value="@{athletic}">運動</option>
+                                            <option value="@{nature}">自然</option>
+                                            <option value="@{stealth}">隱匿</option>
+                                        </optgroup>
+                                        <optgroup label="Social">
+                                            <option value="@{allure}">誘惑</option>
+                                            <option value="@{empathy}">共感</option>
+                                            <option value="@{etiquette}">禮儀</option>
+                                            <option value="@{intimidate}">威嚇</option>
+                                            <option value="@{perform}">表演</option>
+                                        </optgroup>
+                                        <optgroup label="Knowledge">
+                                        <option value="@{crafts}">工藝</option>
+                                        <option value="@{lore}">傳聞</option>
+                                        <option value="@{medicine}">醫藥</option>
+                                        <option value="@{science}">科學</option>
+                                    </optgroup>
+                                    </select>
+                                </span>
+                                <strong>+</strong>
+                                <span class="field-labeled" style="width: 50px; text-align:center" >
+                                    <input type="number" name="attr_move_accuracy_mod" value="0"/>
+                                </span>
+                            </div>
+                            <div>
+                                <label style="display:inline-block;width:70px">傷害</label>
+                                <span>
+                                    <span class="field-labeled" >
+                                        <select name="attr_move_damage_attribute" value="0">
+                                            <option value="0">-</option>
+                                            <option value="@{strength_calc}">力量</option>
+                                            <option value="@{special_calc}">特殊</option>
+                                        </select> 
+                                        <span></span>
+                                    </span>
+                                    <strong>+</strong>
+                                    <span class="field-labeled" style="width:70px;text-align:center" >
+                                        <input type="number" name="attr_move_power" min="0" value="0"  />
+                                        <span>威力</span>
+                                    </span>
+                                    <label style="vertical-align:middle">屬性一致 <input type="checkbox" name="attr_move_has_stab" title="Move has STAB" value="1" /></label>
+                                </span>
+                            </div>
+                            <div>
+                                <input type="hidden" name="attr_move_has_effect" class="move_effect_toggle" />
+                                <span>
+                                    <input type="checkbox" name="attr_move_has_effect" title="Has Effect" value="1" />
+                                </span>
+                                <span class="move_effect-block">
+                                    <span class="field-labeled" style="width:170px;text-align:center">
+                                        <input type="text" name="attr_move_effect" value="無" />
+                                        <span>效果名稱</span>
+                                    </span>
+                                    <span class="field-labeled" style="width:100px;text-align:center">
+                                        <input type="number" name="attr_move_effect_chance" min="0" value="0" />
+                                        <span>機率骰</span>
+                                    </span>
+                                </span>
+                            <div>
+                                <textarea name="attr_move_description" style="height:65px"></textarea>
+                            </div>
+                            </div>
+
+                        </div>
+                        <div class="move-display">
+                            <div>
+                                <div style="display:inline-block;margin-right:5px">
+                                    <span style="font-size:10pt;font-weight:bolder;margin-right:10px;">命中: </span>
+                                    <span class="field-labeled" style="width:70px">
+                                        <input type="number"  name="attr_move_accuracy_calc" value="@{move_accuracy_1} + @{move_accuracy_3} + @{move_accuracy_mod}" style="text-align:center" disabled="true"/>
+                                        <span>骰池</span>
+                                    </span>
+                                    <button type="roll" name="roll_move_accuracy" 
+                                    value="@{whisper} &{template:PMD}{{character= @{character_name} }}{{name= @{move_name} 命中 }}{{target= @{move_target} }}{{pool=[[@{move_accuracy_calc} + (?{Modifier|0}) ]] }}{{roll=[[(@{move_accuracy_calc} + (?{Modifier|0}))d6>4s]] }}{{description= @{move_description} }}" ></button>
+                                </div>
+                                <div style="display:inline-block;margin-right:5px">
+                                    <span style="font-size:10pt;font-weight:bolder;margin-right:10px;">傷害: </span>
+                                    <span class="field-labeled" style="width:70px">
+                                        <input type="number"  name="attr_move_damage_calc" value="@{move_damage_attribute} + @{move_power} + @{move_has_stab}" style="text-align:center" disabled="true"/>
+                                        <span>骰池</span>
+                                    </span>
+                                    <button type="roll" name="roll_move_damage" 
+                                    value="@{whisper} &{template:PMD}{{character= @{character_name} }}{{name= @{move_name} 傷害 }}{{type=@{move_type}}}{{cat= @{move_category} }}{{pool=[[@{move_damage_calc} + ?{Bonus Dice?|0} - ?{Defense/Sp.Defense?|0}]] }}{{roll=[[(@{move_damage_calc} + ?{Bonus Dice?|0} - ?{Defense/Sp.Defense?|0})d6>4s]] }}" ></button>
+                                </div>
+                                <div style="display:inline-block;margin-right:5px">
+                                    <span style="font-size:10pt;font-weight:bolder;margin-right:10px;">效果: </span>
+                                    <span class="field-labeled" style="min-width:85px">
+                                        <span type="text" name="attr_move_effect" style="text-align:center">無</span>
+                                        <span>異常狀態</span>
+                                    </span>
+                                    <span class="field-labeled" style="width:55px;text-align:center;">
+                                        <span type="number" name="attr_move_effect_chance" >0</span>
+                                        <span>機率</span>
+                                    </span>
+                                    <button type="roll" name="roll_move_effect" 
+                                    value="@{whisper} &{template:PMD}{{character= @{character_name} }}{{name= @{move_effect} 效果 }}{{pool=[[@{move_effect_chance}]] }}{{roll=[[(@{move_effect_chance})d6>6s]] }}{{description= @{move_description} }}" ></button>
+                                </div>
+                            </div>
+                            <div style="border-top:1px solid black;margin-top:5px;padding:5px;">
+                                <span class="sheet-move-descr" name="attr_move_description"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <div class='sheet-tab-settings'>
+        <div>
+            <label><input type='checkbox' name='attr_creature_mode' value='0' /> Trainer sheet</label>
+        </div>
+        <div>
+            <label><input type='checkbox' name='attr_creature_mode' value='1' /> Pokemon sheet</label>
+        </div>
+        <div>
+            <label><input type='checkbox' name='attr_creature_mode' value='1' /> Pokemon sheet</label>
+        </div>
+    </div>
+</div>
+
+
+
+
